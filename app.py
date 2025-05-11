@@ -18,6 +18,19 @@ def get_company_info():
     value_prop = st.text_area("What is your unique value proposition?")
     tone = st.selectbox("What tone fits your brand?", ["Friendly", "Formal", "Bold", "Consultative"])
 
+    advanced = {}
+    with st.expander("🔧 Advanced Setup (Optional)"):
+        advanced["action_goal"] = st.text_input("What action do you want the prospect to take after the first email?")
+        advanced["top_objection"] = st.text_input("What's the #1 reason people hesitate to buy from you?")
+        advanced["customer_quote"] = st.text_area("What do your happiest customers say about working with you?")
+        advanced["delivery_method"] = st.selectbox("How do you deliver your product or service?", ["Online", "In-person", "Phone call", "Hybrid"])
+        advanced["b2b_or_b2c"] = st.radio("Do you sell to individuals or companies?", ["B2B", "B2C"])
+        advanced["sales_cycle"] = st.selectbox("How long is your typical sales cycle?", ["Under a week", "1–4 weeks", "1–3 months", "Longer"])
+        advanced["competitor_edge"] = st.text_input("What makes you better than your competitors?")
+        advanced["fallback_rebuttal"] = st.text_input("What do you say when someone says 'We already use something for this'?")
+        advanced["conversation_style"] = st.selectbox("Preferred conversation style?", ["Conversational", "Professional", "Assertive", "Casual"])
+        advanced["comfort_level"] = st.slider("How comfortable are you speaking with leads?", 0, 10, 5)
+
     if st.button("Generate Sales Tools"):
         if all([company_name, products_services, target_audience, top_problems, value_prop]):
             return {
@@ -26,7 +39,8 @@ def get_company_info():
                 "target_audience": target_audience,
                 "top_problems": top_problems,
                 "value_prop": value_prop,
-                "tone": tone
+                "tone": tone,
+                "advanced": advanced
             }
         else:
             st.warning("Please complete all fields.")
