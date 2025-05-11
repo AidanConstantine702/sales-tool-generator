@@ -7,6 +7,38 @@ client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 # Reference knowledge to inform GPT generation
 REFERENCE_KNOWLEDGE = """
+The Modern Sales Pipeline is a structured sales methodology that integrates three leading frameworks:
+
+1. Dale Carnegie’s Relationship-Based Selling: Emphasizes trust, sincerity, and listening. Core principles include showing genuine interest in others, building rapport before pitching, and influencing people through empathy, appreciation, and shared goals. Carnegie advocates for active listening, remembering details about prospects, and letting others feel the idea is theirs. These techniques humanize the sales process and increase the chance of long-term client relationships.
+
+2. The Sandler Selling System: A qualification-heavy approach focused on understanding the buyer's pain, budget, and decision process before pitching. It begins with building equal business stature and upfront contracts (i.e., setting clear expectations). It emphasizes asking structured questions (the "Pain Funnel") to uncover deep business issues and latent needs. Sandler sellers avoid free consulting, never push features too early, and present only when the prospect is emotionally and logically invested.
+
+3. The Challenger Sale: Based on the idea that top-performing salespeople teach, tailor, and take control. Challenger reps lead with insight, reframe how buyers view their problems, and aren’t afraid to push back if needed. They tailor messages to individual buyer roles and use commercial teaching to lead prospects toward new ways of thinking that align with their product or service.
+
+Together, these models form a six-stage process:
+1. Prospecting – Identify ideal leads using insight and relevance.
+2. Building Rapport – Establish credibility and comfort quickly.
+3. Discovery – Ask smart, layered questions to reveal needs.
+4. Presenting Solutions – Personalize the presentation to the buyer’s context and pain.
+5. Handling Objections – Use empathy, insight, and logic to address concerns.
+6. Closing – Gain commitment in a natural, pressure-free way, often by reinforcing agreed value.
+
+This blended pipeline teaches reps to be consultative, respectful, insight-driven, and structured – allowing for predictable, high-value outcomes.
+
+Dale Carnegie’s 30 Principles, updated for modern business, underpin this human-centered approach:
+- Don’t criticize, condemn, or complain – handle objections calmly.
+- Give honest and sincere appreciation – especially when a prospect shares information.
+- Arouse in the other person an eager want – use value propositions that resonate with their goals.
+- Become genuinely interested in other people – research and listen actively.
+- Smile (in tone and presence) – maintain warmth even in email or video.
+- Remember names and key facts – reflect understanding.
+- Be a good listener – let them do most of the talking.
+- Talk in terms of the other person’s interests – avoid product dumping.
+- Let the other person feel the idea is theirs – use collaborative language.
+- Dramatize your ideas – use stories or examples to make your point memorable.
+
+These principles build trust, encourage cooperation, and reduce resistance throughout the sales process, whether during prospecting, negotiation, or onboarding.
+"""
 The Modern Sales Pipeline integrates Dale Carnegie's relationship-building approach, Sandler's structured discovery and qualification, and the Challenger Sale's insight-led teaching and assertive closing. The six core stages are: Prospecting, Rapport, Discovery, Presenting Solutions, Handling Objections, and Closing.
 
 Dale Carnegie's 30 principles emphasize empathy, human dignity, and effective communication. In sales and leadership, they foster rapport, influence without pressure, and build loyalty through sincere interest and appreciation.
@@ -132,5 +164,6 @@ if st.button("🚀 Generate Sales Toolkit"):
         st.subheader("🧩 Needs Assessment Questions")
         for q in assessment:
             st.markdown(f"- {q}")
+
 
 
