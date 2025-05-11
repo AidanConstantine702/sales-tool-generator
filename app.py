@@ -1,140 +1,110 @@
 import streamlit as st
+import openai
+import json
+import pdfkit
 import os
-from openai import OpenAI
 
-# Initialize OpenAI client
-client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+# Initialize OpenAI client (requires openai>=1.2.0)
+client = openai.OpenAI(api_key=st.secrets["openai_api_key"])
 
-# Reference knowledge to inform GPT generation
-REFERENCE_KNOWLEDGE = """
-The Modern Sales Pipeline is a structured sales methodology that blends three respected frameworks:
+# Define company input prompts
+def get_company_info():
+    st.header("🚀 Sales Script & Tools Generator")
 
-1. Dale Carnegie's Relationship-Based Selling: Focuses on building trust, showing sincere interest in others, and communicating with empathy. Sales reps using this approach listen actively, appreciate others genuinely, and seek mutual understanding to influence decisions.
+    company_name = st.text_input("Company Name")
+    products_services = st.text_area("Describe your Products or Services")
+    target_audience = st.text_input("Who is your target audience?")
+    top_problems = st.text_area("What top 3 problems do you solve?")
+    value_prop = st.text_area("What is your unique value proposition?")
+    tone = st.selectbox("What tone fits your brand?", ["Friendly", "Formal", "Bold", "Consultative"])
 
-2. The Sandler Selling System: A qualification-first process that emphasizes asking strategic questions, identifying pain points, and establishing upfront agreements. Salespeople avoid pitching too early and instead gain agreement on budget and decision-making processes before presenting solutions.
+    if st.button("Generate Sales Tools"):
+        if all([company_name, products_services, target_audience, top_problems, value_prop]):
+            return {
+                "company_name": company_name,
+                "products_services": products_services,
+                "target_audience": target_audience,
+                "top_problems": top_problems,
+                "value_prop": value_prop,
+                "tone": tone
+            }
+        else:
+            st.warning("Please complete all fields.")
+            return None
+    return None
 
-3. The Challenger Sale: Encourages salespeople to teach prospects new insights, tailor communications to the buyer's role, and take control of the sales conversation. Challenger reps reframe customer thinking and guide buyers toward recognizing problems they didn't realize they had.
-
-Together, these approaches support a six-stage pipeline: Prospecting, Building Rapport, Discovery, Presenting Solutions, Handling Objections, and Closing.
-
-Dale Carnegie's 30 Principles—such as avoiding criticism, giving sincere appreciation, becoming genuinely interested in others, and dramatizing ideas—underpin effective relationship-building and influence in every sales stage.
-"""
-
-# GPT call function
-def gpt_generate(prompt):
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": prompt}]
-        )
-        return response.choices[0].message.content.strip()
-    except Exception as e:
-        st.error(f"GPT API Error: {str(e)}")
-        return ""
-
-# Prompt builders
-def build_prompt_elevator(data):
-    return f"""
-Using the context below, create a short and medium-length elevator pitch for a B2B company.
-
-Reference:
-{REFERENCE_KNOWLEDGE}
-
-Company: {data['company']}
-Product: {data['product']}
-Ideal Customer: {data['ideal_customer']}
-Problem Solved: {data['problem']}
-What Makes Us Unique: {data['unique']}
-Tone: {data['tone']}
-"""
-
-def build_prompt_call_script(data):
-    return f"""
-Using the reference below, write a consultative B2B sales call script with a {data['tone']} tone.
-
-Reference:
-{REFERENCE_KNOWLEDGE}
-
-Target Company: {data['company']}
-Product: {data['product']}
-Ideal Customer: {data['ideal_customer']}
-Problem Solved: {data['problem']}
-Unique Value: {data['unique']}
-"""
-
-def build_prompt_cold_email(data):
-    return f"""
-Using the reference below, write a cold outreach email introducing {data['company']} to a prospect in {data['ideal_customer']}. Keep it concise and persuasive.
-
-Reference:
-{REFERENCE_KNOWLEDGE}
-
-Product: {data['product']}
-Problem it solves: {data['problem']}
-Unique benefit: {data['unique']}
-Tone: {data['tone']}
-"""
-
-def generate_assessment():
-    return [
-        "How do you currently handle customer acquisition?",
-        "What challenges do you face in your current sales pipeline?",
-        "How are your reps trained on objection handling?",
-        "What percentage of deals stall before closing?",
-        "Do you use a formal sales framework or methodology?",
-        "Who are your target decision-makers in the buying process?",
-        "What would improve conversion rates most in your opinion?"
-    ]
-
-# Streamlit UI
-st.title("🧠 B2B Sales Toolkit Generator (GPT-4 Powered)")
-st.write("Answer a few quick questions and get your sales toolkit generated instantly.")
-
-company = st.text_input("1. Company name?")
-product = st.text_input("2. What does your company sell?")
-ideal_customer = st.text_input("3. Who is your ideal customer?")
-problem = st.text_input("4. What problem does your product solve?")
-unique = st.text_input("5. What makes your company different?")
-tone = st.selectbox("6. Preferred tone?", ["Professional", "Friendly", "Confident", "Bold"])
-
-if st.button("🚀 Generate Sales Toolkit"):
-    if not all([company, product, ideal_customer, problem, unique]):
-        st.error("Please complete all fields before generating.")
+# Load persona scenarios safely
+def load_personas():
+    if os.path.exists("prospects.json"):
+        with open("prospects.json") as f:
+            return json.load(f)
     else:
-        inputs = {
-            "company": company,
-            "product": product,
-            "ideal_customer": ideal_customer,
-            "problem": problem,
-            "unique": unique,
-            "tone": tone
-        }
+        st.warning("⚠️ Warning: prospects.json not found. Continuing without personas.")
+        return []
 
-        with st.spinner("Generating elevator pitch..."):
-            elevator_output = gpt_generate(build_prompt_elevator(inputs)).split("\n")
-            short_pitch = elevator_output[0] if elevator_output else ""
-            medium_pitch = "\n".join(elevator_output[1:]) if len(elevator_output) > 1 else ""
+# Generate content with OpenAI v1+
+def generate_content(prompt):
+    response = client.chat.completions.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": "You are a B2B sales expert trained on Dale Carnegie, Sandler, and Challenger frameworks."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.7
+    )
+    return response.choices[0].message.content
 
-        with st.spinner("Generating call script..."):
-            call_script = gpt_generate(build_prompt_call_script(inputs))
+# Generate all deliverables
+def create_deliverables(info, personas):
+    persona_summary = "\n".join(
+        [f"- {p['industry']} {p['persona']} with pain points: {', '.join(p['pain_points'])}" for p in personas]
+    ) if personas else "No personas provided."
 
-        with st.spinner("Generating cold email..."):
-            cold_email = gpt_generate(build_prompt_cold_email(inputs))
+    prompt = f"""
+Create the following based on this company:
 
-        assessment = generate_assessment()
+Company Name: {info['company_name']}
+Products/Services: {info['products_services']}
+Target Audience: {info['target_audience']}
+Top Problems: {info['top_problems']}
+Value Proposition: {info['value_prop']}
+Tone: {info['tone']}
 
-        st.success("✅ Sales Toolkit Generated")
+1. Cold call script
+2. Warm intro script
+3. Discovery call script
+4. Prospecting email sequence (intro, follow-up, breakup)
+5. 2 elevator pitch versions (short and descriptive)
+6. 5-7 needs assessment questions
 
-        st.subheader("📢 Elevator Pitch")
-        st.markdown(f"**Short:**\n{short_pitch}")
-        st.markdown(f"**Medium:**\n{medium_pitch}")
+Use Dale Carnegie, Sandler, and Challenger principles.
 
-        st.subheader("📞 Sales Call Script")
-        st.text_area("Call Script", call_script, height=250)
+Example customer personas (if any):
+{persona_summary}
+"""
+    return generate_content(prompt)
 
-        st.subheader("✉️ Cold Outreach Email")
-        st.text_area("Cold Email", cold_email, height=200)
+# Save deliverables to PDF
+def save_to_pdf(content, filename="sales_tools.pdf"):
+    html_content = f"<pre>{content}</pre>"
+    pdfkit.from_string(html_content, filename)
+    return filename
 
-        st.subheader("🧩 Needs Assessment Questions")
-        for q in assessment:
-            st.markdown(f"- {q}")
+# Main app
+def main():
+    info = get_company_info()
+    if info:
+        st.info("Generating sales tools... Please wait ⏳")
+        personas = load_personas()
+        deliverables = create_deliverables(info, personas)
+        st.success("✅ Sales tools generated!")
+        st.text_area("Generated Sales Tools", deliverables, height=400)
+
+        if st.button("Download as PDF"):
+            filename = save_to_pdf(deliverables)
+            with open(filename, "rb") as f:
+                st.download_button("📥 Download PDF", f, file_name="sales_tools.pdf")
+
+# Run app
+if __name__ == "__main__":
+    main()
