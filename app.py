@@ -1,16 +1,16 @@
 import streamlit as st
 from fpdf import FPDF
 import datetime
-import openai
 import os
 from dotenv import load_dotenv
+from openai import OpenAI
 
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Function to call ChatGPT for content generation
 def gpt_generate(prompt):
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4",
         messages=[{"role": "user", "content": prompt}]
     )
@@ -122,6 +122,10 @@ if st.button("Generate Sales Toolkit"):
     assessment = generate_assessment()
 
     pdf_file = export_to_pdf(inputs, short_pitch, medium_pitch, call_script, cold_email, assessment)
+
+    st.success("Sales toolkit generated with GPT!")
+    with open(pdf_file, "rb") as f:
+        st.download_button("📄 Download PDF", f, file_name="sales_toolkit.pdf")
 
     st.success("Sales toolkit generated with GPT!")
     with open(pdf_file, "rb") as f:
