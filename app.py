@@ -134,7 +134,7 @@ Below is your step-by-step sales journey. Follow the stages in order. Look for:
 ---
 """)
 
- st.markdown(deliverables, unsafe_allow_html=True)
+        st.markdown(deliverables, unsafe_allow_html=True)
 
         if st.button("Download as PDF"):
             filename = save_to_pdf(deliverables)
