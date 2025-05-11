@@ -1,11 +1,11 @@
 import streamlit as st
-import openai
+from openai import OpenAI
 import json
 import pdfkit
 import os
 
-# Initialize OpenAI client (requires openai>=1.2.0)
-openai.api_key = st.secrets["openai_api_key"]
+# Initialize OpenAI client (for openai>=1.x)
+client = OpenAI(api_key=st.secrets["openai_api_key"])
 
 # Define company input prompts
 def get_company_info():
@@ -42,9 +42,9 @@ def load_personas():
         st.warning("⚠️ Warning: prospects.json not found. Continuing without personas.")
         return []
 
-# Generate content with OpenAI v1+
+# Generate content with OpenAI v1+ client
 def generate_content(prompt):
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4",
         messages=[
             {"role": "system", "content": "You are a B2B sales expert trained on Dale Carnegie, Sandler, and Challenger frameworks."},
