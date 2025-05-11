@@ -61,7 +61,7 @@ def create_deliverables(info, personas):
     ) if personas else "No personas provided."
 
     prompt = f"""
-You are a B2B sales strategist generating customer-facing tools in order of a standard sales timeline. Begin with outreach and end with closing steps. Make the tone human, conversational, and encouraging—avoid robotic or overly formal language.
+You are a B2B sales strategist generating a walkthrough-style playbook. Assume the user has little sales experience but high motivation. Your goal is to guide them from the first cold email to a closed deal using practical steps, brief explanations, and clear tips at each stage.
 
 Company Name: {info['company_name']}
 Products/Services: {info['products_services']}
@@ -70,23 +70,26 @@ Top Problems: {info['top_problems']}
 Value Proposition: {info['value_prop']}
 Tone: {info['tone']}
 
-Create the following sales tools in logical sales order:
+Create a clear, step-by-step sales process with the following components:
 
-1. Cold outreach email (initial prospecting)
-2. Follow-up email (non-response)
-3. Breakup email (final no-response email)
-4. Warm intro phone script (referral or inbound inquiry)
-5. Discovery call script that assumes the prospect responded positively to the cold email and agreed to a call—reference that context in tone and flow.
-6. Elevator pitch (short and descriptive versions)
-7. Sales presentation talking points
-8. Handling objections (3–5 common concerns and responses)
-9. Closing script (confirmation of deal and next steps)
-10. 5-7 discovery/needs assessment questions
+1. Step name (e.g., "Cold Outreach")
+2. What to send/do (email/script/etc.)
+3. When to follow up or move to next step
+4. Tips and micro-advice (brief, actionable, and beginner-friendly)
+5. Short explanation for why this step matters (1–2 sentences max)
 
-Use principles from Dale Carnegie (trust and empathy), Sandler (qualification and pain), and Challenger (teach, tailor, take control).
-If personas are provided, tailor tone and content to those pain points:
+Sales journey should include:
+- Cold outreach email
+- Follow-up and breakup emails
+- Warm intro phone script (if response is positive)
+- Discovery call script (based on email response)
+- Elevator pitch (short + longer version)
+- Talking points for sales presentation/demo
+- Objection handling (3–5 common concerns)
+- Closing script (confirm the deal + next steps)
+- 5–7 discovery/needs assessment questions
 
-{persona_summary}
+Incorporate Carnegie (rapport & empathy), Sandler (discovery & qualification), and Challenger (insight & control) principles throughout. Keep tone helpful, human, and confident.
 """
     return generate_content(prompt)
 
