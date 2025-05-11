@@ -7,7 +7,10 @@ client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 # Reference knowledge to inform GPT generation
 REFERENCE_KNOWLEDGE = """
-ARCpoint Labs offers employer drug & alcohol testing programs for regulated and non-regulated industries. Their services include compliance management, random selection pools, background checks, training, and nationwide site access. They simplify compliance and scale from small to large firms.
+The Modern Sales Pipeline integrates Dale Carnegie's relationship-building approach, Sandler's structured discovery and qualification, and the Challenger Sale's insight-led teaching and assertive closing. The six core stages are: Prospecting, Rapport, Discovery, Presenting Solutions, Handling Objections, and Closing.
+
+Dale Carnegie's 30 principles emphasize empathy, human dignity, and effective communication. In sales and leadership, they foster rapport, influence without pressure, and build loyalty through sincere interest and appreciation.
+"""
 
 The Modern Sales Pipeline integrates Dale Carnegie's relationship-building approach, Sandler's structured discovery and qualification, and the Challenger Sale's insight-led teaching and assertive closing. The six core stages are: Prospecting, Rapport, Discovery, Presenting Solutions, Handling Objections, and Closing.
 
@@ -129,4 +132,5 @@ if st.button("🚀 Generate Sales Toolkit"):
         st.subheader("🧩 Needs Assessment Questions")
         for q in assessment:
             st.markdown(f"- {q}")
+
 
