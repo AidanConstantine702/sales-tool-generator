@@ -61,7 +61,7 @@ def create_deliverables(info, personas):
     ) if personas else "No personas provided."
 
     prompt = f"""
-You are a B2B sales strategist generating customer-facing tools in order of a standard sales timeline. Begin with outreach and end with closing steps.
+You are a B2B sales strategist generating customer-facing tools in order of a standard sales timeline. Begin with outreach and end with closing steps. Make the tone human, conversational, and encouraging—avoid robotic or overly formal language.
 
 Company Name: {info['company_name']}
 Products/Services: {info['products_services']}
@@ -70,13 +70,13 @@ Top Problems: {info['top_problems']}
 Value Proposition: {info['value_prop']}
 Tone: {info['tone']}
 
-Create the following sales tools in order:
+Create the following sales tools in logical sales order:
 
 1. Cold outreach email (initial prospecting)
 2. Follow-up email (non-response)
 3. Breakup email (final no-response email)
 4. Warm intro phone script (referral or inbound inquiry)
-5. Discovery call script (qualification and pain discovery)
+5. Discovery call script that assumes the prospect responded positively to the cold email and agreed to a call—reference that context in tone and flow.
 6. Elevator pitch (short and descriptive versions)
 7. Sales presentation talking points
 8. Handling objections (3–5 common concerns and responses)
