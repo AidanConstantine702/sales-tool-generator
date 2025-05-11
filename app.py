@@ -124,7 +124,17 @@ def main():
         personas = load_personas()
         deliverables = create_deliverables(info, personas)
         st.success("✅ Sales tools generated!")
-        st.text_area("Generated Sales Tools", deliverables, height=400)
+        st.markdown("""
+## 📘 Your Sales Toolkit
+Below is your step-by-step sales journey. Follow the stages in order. Look for:
+- **🧠 Explanation**: Why this step matters
+- **✅ Script**: What to say or send
+- **💡 Tips**: How to make it more effective
+
+---
+""")
+
+st.markdown(deliverables, unsafe_allow_html=True)
 
         if st.button("Download as PDF"):
             filename = save_to_pdf(deliverables)
