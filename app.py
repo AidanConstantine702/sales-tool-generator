@@ -1,55 +1,49 @@
 import streamlit as st
 from fpdf import FPDF
 import datetime
+import openai
+import os
+from dotenv import load_dotenv
 
-# Function to generate elevator pitch
+load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-def generate_elevator_pitch(data):
-    short = f"We help {data['ideal_customer']} solve {data['problem']} by offering {data['product']}. Unlike others, we {data['unique']}."
-    medium = f"At {data['company']}, we serve {data['ideal_customer']} who are facing {data['problem']}. Our solution, {data['product']}, stands out because we {data['unique']}. With a {data['tone']} tone, we help clients achieve better outcomes, faster." 
-    return short, medium
+# Function to call ChatGPT for content generation
+def gpt_generate(prompt):
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return response.choices[0].message.content.strip()
 
-# Function to generate sales call script
-
-def generate_call_script(data):
-    return f"""
---- Sales Call Script ---
-
-Hi, this is [Your Name] from {data['company']}. I work with companies in {data['ideal_customer']} who are struggling with {data['problem']}.
-
-I’m reaching out because our solution, {data['product']}, helps solve that problem by {data['unique']}.
-
-Can I ask you a few quick questions to see if this might be a fit?
-
-1. How do you currently handle this issue?
-2. What challenges are you facing with your current process?
-3. Would it help to have a more cost-effective, streamlined way?
-
-If you're open to it, I’d love to schedule a deeper conversation.
-
-Thanks for your time!
+# Prompt builders
+def build_prompt_elevator(data):
+    return f"""Create a short and medium-length elevator pitch for the following:
+Company: {data['company']}
+Product: {data['product']}
+Ideal Customer: {data['ideal_customer']}
+Problem Solved: {data['problem']}
+What Makes Us Unique: {data['unique']}
+Tone: {data['tone']}
 """
 
-# Function to generate cold email
+def build_prompt_call_script(data):
+    return f"""Write a consultative B2B sales call script using a friendly tone.
+Company: {data['company']}
+Customer: {data['ideal_customer']}
+Problem: {data['problem']}
+Solution: {data['product']}
+Unique Value: {data['unique']}
+"""
 
-def generate_cold_email(data):
-    return f"""
-Subject: Solving {data['problem']} for {data['ideal_customer']}
-
-Hi [First Name],
-
-I’m reaching out from {data['company']}. We help businesses like yours solve {data['problem']} using {data['product']}.
-
-What makes us different? We {data['unique']}.
-
-Would you be open to a quick 15-minute call to explore if this is a fit?
-
-Best,
-[Your Name]
+def build_prompt_cold_email(data):
+    return f"""Write a cold outreach email introducing {data['company']} to a prospect in {data['ideal_customer']}. Keep it concise, persuasive, and friendly.
+Product: {data['product']}
+Problem it solves: {data['problem']}
+Unique benefit: {data['unique']}
 """
 
 # Function to generate needs assessment questions
-
 def generate_assessment():
     return [
         "How do you currently handle drug and alcohol testing?",
@@ -61,8 +55,7 @@ def generate_assessment():
         "Do you require testing across multiple states or regions?"
     ]
 
-# Function to export to PDF
-
+# Export content to PDF
 def export_to_pdf(data, short_pitch, medium_pitch, script, email, assessment):
     pdf = FPDF()
     pdf.add_page()
@@ -101,7 +94,7 @@ def export_to_pdf(data, short_pitch, medium_pitch, script, email, assessment):
 
 # Streamlit UI
 st.title("B2B Sales Training Chatbot")
-st.write("Answer the questions below to generate your sales toolkit.")
+st.write("Answer the questions below to generate your sales toolkit using GPT.")
 
 company = st.text_input("1. What is your company name?")
 product = st.text_input("2. What does your company sell?")
@@ -120,12 +113,16 @@ if st.button("Generate Sales Toolkit"):
         "tone": tone
     }
 
-    short_pitch, medium_pitch = generate_elevator_pitch(inputs)
-    call_script = generate_call_script(inputs)
-    email = generate_cold_email(inputs)
+    # GPT generation
+    elevator_output = gpt_generate(build_prompt_elevator(inputs)).split("\n")
+    short_pitch = elevator_output[0] if elevator_output else ""
+    medium_pitch = "\n".join(elevator_output[1:]) if len(elevator_output) > 1 else ""
+    call_script = gpt_generate(build_prompt_call_script(inputs))
+    cold_email = gpt_generate(build_prompt_cold_email(inputs))
     assessment = generate_assessment()
-    pdf_file = export_to_pdf(inputs, short_pitch, medium_pitch, call_script, email, assessment)
 
-    st.success("Sales toolkit generated!")
+    pdf_file = export_to_pdf(inputs, short_pitch, medium_pitch, call_script, cold_email, assessment)
+
+    st.success("Sales toolkit generated with GPT!")
     with open(pdf_file, "rb") as f:
         st.download_button("📄 Download PDF", f, file_name="sales_toolkit.pdf")
