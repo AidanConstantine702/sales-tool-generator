@@ -44,7 +44,7 @@ def load_personas():
 
 # Generate content with OpenAI v1+
 def generate_content(prompt):
-    response = client.chat.completions.create(
+    response = openai.ChatCompletion.create(
         model="gpt-4",
         messages=[
             {"role": "system", "content": "You are a B2B sales expert trained on Dale Carnegie, Sandler, and Challenger frameworks."},
