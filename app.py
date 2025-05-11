@@ -136,10 +136,10 @@ Below is your step-by-step sales journey. Follow the stages in order. Look for:
 
 st.markdown(deliverables, unsafe_allow_html=True)
 
-        if st.button("Download as PDF"):
+                if st.button("Download as PDF"):
             filename = save_to_pdf(deliverables)
             with open(filename, "rb") as f:
-                st.download_button("📥 Download PDF", f, file_name="sales_tools.pdf")
+                st.download_button("📥 Download PDF", f, file_name="sales_tools.pdf")"📥 Download PDF", f, file_name="sales_tools.pdf")
 
 # Run app
 if __name__ == "__main__":
