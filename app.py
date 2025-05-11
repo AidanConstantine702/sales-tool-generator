@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 from openai import OpenAI
 import time
 
-# Load API key from .env file
 from openai import OpenAI
 import os
 
