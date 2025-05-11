@@ -7,8 +7,10 @@ from openai import OpenAI
 import time
 
 # Load API key from .env file
-load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+from openai import OpenAI
+import os
+
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 # Function to call GPT-4 via OpenAI API
 def gpt_generate(prompt):
