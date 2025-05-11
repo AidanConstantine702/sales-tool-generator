@@ -5,6 +5,15 @@ from openai import OpenAI
 # Initialize OpenAI client
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
+# Reference knowledge to inform GPT generation
+REFERENCE_KNOWLEDGE = """
+ARCpoint Labs offers employer drug & alcohol testing programs for regulated and non-regulated industries. Their services include compliance management, random selection pools, background checks, training, and nationwide site access. They simplify compliance and scale from small to large firms.
+
+The Modern Sales Pipeline integrates Dale Carnegie's relationship-building approach, Sandler's structured discovery and qualification, and the Challenger Sale's insight-led teaching and assertive closing. The six core stages are: Prospecting, Rapport, Discovery, Presenting Solutions, Handling Objections, and Closing.
+
+Dale Carnegie's 30 principles emphasize empathy, human dignity, and effective communication. In sales and leadership, they foster rapport, influence without pressure, and build loyalty through sincere interest and appreciation.
+"""
+
 # Function to call GPT-4 via OpenAI API
 def gpt_generate(prompt):
     try:
@@ -19,7 +28,11 @@ def gpt_generate(prompt):
 
 # Prompt builders
 def build_prompt_elevator(data):
-    return f"""Create a short and medium-length elevator pitch for the following:
+    return f"""Using the context below, create a short and medium-length elevator pitch for a B2B company.
+
+Reference:
+{REFERENCE_KNOWLEDGE}
+
 Company: {data['company']}
 Product: {data['product']}
 Ideal Customer: {data['ideal_customer']}
@@ -29,16 +42,24 @@ Tone: {data['tone']}
 """
 
 def build_prompt_call_script(data):
-    return f"""Write a consultative B2B sales call script using a {data['tone']} tone.
-Company: {data['company']}
-Customer: {data['ideal_customer']}
-Problem: {data['problem']}
-Solution: {data['product']}
+    return f"""Using the reference information below, write a consultative B2B sales call script with a {data['tone']} tone.
+
+Reference:
+{REFERENCE_KNOWLEDGE}
+
+Target Company: {data['company']}
+Product: {data['product']}
+Ideal Customer: {data['ideal_customer']}
+Problem Solved: {data['problem']}
 Unique Value: {data['unique']}
 """
 
 def build_prompt_cold_email(data):
-    return f"""Write a cold outreach email introducing {data['company']} to a prospect in {data['ideal_customer']}. Keep it concise and persuasive.
+    return f"""Using the context below, write a cold outreach email introducing {data['company']} to a prospect in {data['ideal_customer']}. Keep it concise and persuasive.
+
+Reference:
+{REFERENCE_KNOWLEDGE}
+
 Product: {data['product']}
 Problem it solves: {data['problem']}
 Unique benefit: {data['unique']}
@@ -108,3 +129,4 @@ if st.button("🚀 Generate Sales Toolkit"):
         st.subheader("🧩 Needs Assessment Questions")
         for q in assessment:
             st.markdown(f"- {q}")
+
