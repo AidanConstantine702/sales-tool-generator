@@ -4,6 +4,8 @@
 import openai
 import streamlit as st
 import os
+from io import BytesIO
+from xhtml2pdf import pisa
 
 # Load OpenAI API key from Streamlit secrets or environment variable
 api_key = st.secrets.get("openai_api_key") or os.getenv("OPENAI_API_KEY")
@@ -27,47 +29,85 @@ def generate_content(prompt):
     return response.choices[0].message.content
 
 def create_deliverables(info, personas):
+    advanced = info.get("advanced", {})
     prompt = f"""
-    Using the following business background:
+You are building a sales toolkit for a motivated founder or business owner.
 
-    ---
-    {info}
-    ---
+Company Name: {info['company_name']}
+Products/Services: {info['products_services']}
+Target Audience: {info['target_audience']}
+Top Problems Solved: {info['top_problems']}
+Value Proposition: {info['value_prop']}
+Preferred Tone: {info['tone']}
 
-    And targeting the following buyer personas:
+# Advanced Insights
+Desired Prospect Action: {advanced.get('action_goal', 'Not specified')}
+Common Objection: {advanced.get('top_objection', 'Not specified')}
+Customer Testimonial Snippet: {advanced.get('customer_quote', 'Not specified')}
+Delivery Method: {advanced.get('delivery_method', 'Not specified')}
+Sales Model: {advanced.get('b2b_or_b2c', 'Not specified')}
+Sales Cycle: {advanced.get('sales_cycle', 'Not specified')}
+Competitive Advantage: {advanced.get('competitor_edge', 'Not specified')}
+Objection Rebuttal: {advanced.get('fallback_rebuttal', 'Not specified')}
+Conversation Style: {advanced.get('conversation_style', 'Not specified')}
+Speaking Comfort Level (0–10): {advanced.get('comfort_level', 'Not specified')}
 
-    ---
-    {personas}
-    ---
+Buyer Personas:
+{personas}
 
-    Generate a full sales sequence that starts with a cold email and ends with a closed deal, including tips and guidance at each stage.
-    """
+Generate a complete, step-by-step sales walkthrough with realistic, usable tools and tips — starting from first contact and ending with a closed deal.
+"""
     return generate_content(prompt)
+
+def create_pdf_from_html(html):
+    pdf = BytesIO()
+    pisa.CreatePDF(BytesIO(html.encode("utf-8")), dest=pdf)
+    return pdf
 
 def main():
     st.title("🧠 Sales Tool Generator - AI Co-Pilot")
 
     with st.form("info_form"):
-        business_info = st.text_area("Briefly describe your product or service:", height=100)
-        target_personas = st.text_area("Describe your target audience or personas:", height=100)
+        st.subheader("📋 Basic Information")
+        company_name = st.text_input("Company Name")
+        products_services = st.text_area("Describe your Products or Services")
+        target_audience = st.text_input("Who is your target audience?")
+        top_problems = st.text_area("What top 3 problems do you solve?")
+        value_prop = st.text_area("What is your unique value proposition?")
+        tone = st.selectbox("What tone fits your brand?", ["Friendly", "Formal", "Bold", "Consultative"])
+
+        advanced = {}
+        with st.expander("🔧 Advanced Setup (Optional)"):
+            advanced["action_goal"] = st.text_input("What action do you want the prospect to take after the first email?")
+            advanced["top_objection"] = st.text_input("What's the #1 reason people hesitate to buy from you?")
+            advanced["customer_quote"] = st.text_area("What do your happiest customers say about working with you?")
+            advanced["delivery_method"] = st.selectbox("How do you deliver your product or service?", ["Online", "In-person", "Phone call", "Hybrid"])
+            advanced["b2b_or_b2c"] = st.radio("Do you sell to individuals or companies?", ["B2B", "B2C"])
+            advanced["sales_cycle"] = st.selectbox("How long is your typical sales cycle?", ["Under a week", "1–4 weeks", "1–3 months", "Longer"])
+            advanced["competitor_edge"] = st.text_input("What makes you better than your competitors?")
+            advanced["fallback_rebuttal"] = st.text_input("What do you say when someone says 'We already use something for this'?")
+            advanced["conversation_style"] = st.selectbox("Preferred conversation style?", ["Conversational", "Professional", "Assertive", "Casual"])
+            advanced["comfort_level"] = st.slider("How comfortable are you speaking with leads?", 0, 10, 5)
+
         submitted = st.form_submit_button("Generate Sales Tools")
 
     if submitted:
         with st.spinner("Creating your custom sales walkthrough..."):
-            deliverables = create_deliverables(business_info, target_personas)
+            inputs = {
+                "company_name": company_name,
+                "products_services": products_services,
+                "target_audience": target_audience,
+                "top_problems": top_problems,
+                "value_prop": value_prop,
+                "tone": tone,
+                "advanced": advanced
+            }
+            personas = "Custom input from advanced fields or default buyer types."
+            deliverables = create_deliverables(inputs, personas)
 
         st.markdown("---")
         st.markdown("### 🧩 Your Step-by-Step Sales Toolkit")
         st.markdown(deliverables, unsafe_allow_html=True)
-
-        # Optional download as PDF
-        from io import BytesIO
-        from xhtml2pdf import pisa
-
-        def create_pdf_from_html(html):
-            pdf = BytesIO()
-            pisa.CreatePDF(BytesIO(html.encode("utf-8")), dest=pdf)
-            return pdf
 
         if st.button("Download as PDF"):
             pdf_data = create_pdf_from_html(deliverables)
